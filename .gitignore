@@ -1,0 +1,28 @@
+# Data 
+data/complaints_processed.csv
+outputs/
+
+#Python
+__pycache__/
+*.egg-info/
+
+
+#Jupyter
+.ipynb_checkpoints/
+
+#virtual environment
+.env 
+.env.dist
+venv/
+env/
+
+# Metadata
+.ds_store
+Thumbs.db
+desktop.ini
+
+# VScode
+.vscode/
+
+#Pycharm
+.idea/
