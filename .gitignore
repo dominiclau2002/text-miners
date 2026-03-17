@@ -11,7 +11,7 @@ data/credit_reporting_text_processed.csv
 # data/retail_banking_text_processed.csv
 
 
-outputs/
+#outputs/
 
 
 #Python
