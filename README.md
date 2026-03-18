@@ -31,19 +31,25 @@ text-miners/
 │   ├── 2_EDA-2.ipynb
 │   └── 3_prepping_data.ipynb
 ├── task1_topic_modelling/
+│   └── topic_modelling.ipynb
 ├── task2_classification/
+│   └── classification.ipynb
 ├── task3_risk_rating/
 │   ├── annotation_guide.md
 │   └── risk_rating.ipynb
 ├── outputs/
 └── demo/
+    └── streamlit.py
 ```
 
 Notes:
 
-- `task1_topic_modelling/`, `task2_classification/`, `outputs/`, and `demo/` are present but currently empty.
+- `task1_topic_modelling/topic_modelling.ipynb`: LDA topic modelling pipeline (see section below).
+- `task2_classification/classification.ipynb`: empty notebook scaffold, classification work in progress.
+- `outputs/` is present but currently empty.
 - `task3_risk_rating/annotation_guide.md` is currently empty.
 - `task3_risk_rating/risk_rating.ipynb` is a minimal valid notebook scaffold.
+- `demo/streamlit.py` is an empty placeholder for a future Streamlit demo application.
 
 ## Data files and purpose
 
@@ -58,6 +64,8 @@ The repository currently declares:
 
 - Python `>=3.12` in `requirements.txt`
 - pandas `>=1.5.0` in `requirements.txt`
+- gensim `>=4.3.0` in `requirements.txt`
+- matplotlib `>=3.7.0` in `requirements.txt`
 
 The preprocessing notebooks also import additional libraries. A complete environment for running notebooks is:
 
@@ -67,6 +75,8 @@ The preprocessing notebooks also import additional libraries. A complete environ
 - nltk `>=3.8.1`
 - plotly `>=5.0.0`
 - scikit-learn `>=1.3.0`
+- gensim `>=4.3.0`
+- matplotlib `>=3.7.0`
 - jupyter `>=1.0.0`
 
 Install example:
@@ -75,7 +85,7 @@ Install example:
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install "pandas>=1.5.0" "numpy>=1.24.0" "nltk>=3.8.1" "plotly>=5.0.0" "scikit-learn>=1.3.0" "jupyter>=1.0.0"
+pip install "pandas>=1.5.0" "numpy>=1.24.0" "nltk>=3.8.1" "plotly>=5.0.0" "scikit-learn>=1.3.0" "gensim>=4.3.0" "matplotlib>=3.7.0" "jupyter>=1.0.0"
 ```
 
 Optional NLTK assets (if missing at runtime):
@@ -119,6 +129,29 @@ Related preprocessing notebooks:
 
 - `preprocessing/1_EDA-1.ipynb`: reads `complaints.csv` and writes category specific processed CSV files.
 - `preprocessing/2_EDA-2.ipynb`: performs additional EDA on category processed files.
+
+## Task 1: Topic modelling (`task1_topic_modelling/topic_modelling.ipynb`)
+
+This notebook performs unsupervised LDA topic modelling on `data/complaints_processed_full.csv`.
+
+Steps:
+
+1. Load preprocessed data:
+   - `pd.read_csv('../data/complaints_processed_full.csv')`
+2. Build gensim corpus:
+   - tokenize `narrative` column with `.str.split()`
+   - build a `corpora.Dictionary` and convert each document to bag-of-words
+3. Select optimal number of topics:
+   - evaluate `CoherenceModel` (metric: `c_v`) for `num_topics` in `[5, 10, 15, 20, 25, 30]`
+   - plot coherence scores and select the highest
+4. Train final LDA model:
+   - `gensim.models.LdaModel` with optimal `num_topics`
+5. Inspect results:
+   - print top-10 words per topic
+   - extract per-document topic vectors
+   - assign dominant topic to each document
+
+Required additional dependencies: `gensim>=4.3.0`, `matplotlib>=3.7.0`.
 
 ## Quick start
 
