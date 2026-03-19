@@ -160,6 +160,10 @@ Required additional dependencies: `gensim>=4.3.0`, `matplotlib>=3.7.0`.
 3. Open notebooks from `preprocessing/` in Jupyter.
 4. Run `3_prepping_data.ipynb` to regenerate `data/complaints_processed_full.csv`.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full collaborator workflow: cloning, branching, pushing, and opening pull requests.
+
 ## Git workflow: notebook metadata stripping
 
 This repository uses a pre-commit hook for notebooks:
