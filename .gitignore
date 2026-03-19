@@ -10,6 +10,12 @@ data/credit_reporting_text_processed.csv
 # data/mortgages_and_loans_text_processed.csv
 # data/retail_banking_text_processed.csv
 
+# Generated regenerable split files (run preprocessing/data_splitting.ipynb to regenerate)
+data/test_data.csv
+data/train_data.csv
+data/test_indices.csv
+data/train_indices.csv
+
 
 #outputs/
 
@@ -19,7 +25,7 @@ __pycache__/
 *.egg-info/
 
 
-#Jupyter
+#Jupytergit status
 .ipynb_checkpoints/
 
 #virtual environment
