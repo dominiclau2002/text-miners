@@ -1,0 +1,55 @@
+DATA SPLIT METADATA
+================================================================================
+
+Source Dataset: complaints_processed_full.csv
+Total Records: 143962
+
+SPLIT PARAMETERS:
+- Split Ratio: 80% train / 20% test
+- Stratification: By 'product' category
+- Random State: 42 (for reproducibility)
+
+SPLIT RESULTS:
+- Train set size: 115169 (80.00%)
+- Test set size: 28793 (20.00%)
+
+CLASS DISTRIBUTION BY PRODUCT:
+
+            Product  Original %   Train %    Test %
+   credit_reporting   43.985218 43.984926 43.986386
+    debt_collection   17.587975 17.588066 17.587608
+mortgages_and_loans   15.288757 15.288836 15.288438
+        credit_card   11.944819 11.945055 11.943875
+     retail_banking   11.193232 11.193116 11.193693
+
+OUTPUT FILES:
+1. train_indices.csv - CSV of row indices for train set
+2. test_indices.csv - CSV of row indices for test set
+3. train_data.csv - Full train dataset with all columns
+4. test_data.csv - Full test dataset with all columns
+5. split_info.txt - This metadata file
+
+USAGE INSTRUCTIONS:
+
+For members using indices:
+  train_indices = pd.read_csv('data/train_indices.csv')['train_index'].values
+  test_indices = pd.read_csv('data/test_indices.csv')['test_index'].values
+  train_df = df.iloc[train_indices]
+  test_df = df.iloc[test_indices]
+
+For members using pre-split data:
+  train_df = pd.read_csv('data/train_data.csv')
+  test_df = pd.read_csv('data/test_data.csv')
+
+NOTE: All team members MUST use this same split for consistency and comparability.
+
+REGENERATION INSTRUCTIONS:
+The CSV files above (train_data.csv, test_data.csv, train_indices.csv, test_indices.csv)
+are regenerable and NOT committed to Git. To regenerate them:
+
+1. Open: preprocessing/data_splitting.ipynb
+2. Run all cells
+3. Output files will be created in data/ directory
+
+Because random_state=42 is used, you will get identical splits every time.
+================================================================================
