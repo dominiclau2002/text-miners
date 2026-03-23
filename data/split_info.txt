@@ -42,14 +42,4 @@ For members using pre-split data:
   test_df = pd.read_csv('data/test_data.csv')
 
 NOTE: All team members MUST use this same split for consistency and comparability.
-
-REGENERATION INSTRUCTIONS:
-The CSV files above (train_data.csv, test_data.csv, train_indices.csv, test_indices.csv)
-are regenerable and NOT committed to Git. To regenerate them:
-
-1. Open: preprocessing/data_splitting.ipynb
-2. Run all cells
-3. Output files will be created in data/ directory
-
-Because random_state=42 is used, you will get identical splits every time.
 ================================================================================
