@@ -47,22 +47,17 @@ RISK_COLORS = {"high": DANGER, "medium": WARNING, "low": SUCCESS}
 # ── Global CSS ─────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after {{ box-sizing: border-box; }}
 
 html, body, [class*="css"] {{
-    font-family: 'Outfit', sans-serif !important;
+    font-family: 'DM Sans', sans-serif !important;
     color: {TEXT2} !important;
 }}
 
 .stApp {{
-    background: #050B1A;
-    background-image:
-        radial-gradient(ellipse 80% 50% at 10% 10%, rgba(0,212,255,0.07) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 40% at 88% 88%, rgba(255,140,66,0.05) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 70% at 50% 50%, rgba(0,60,160,0.03) 0%, transparent 65%);
-    background-attachment: fixed;
+    background: #0d1117;
 }}
 
 .main .block-container {{
@@ -104,7 +99,7 @@ html, body, [class*="css"] {{
     border-left: 2px solid transparent !important;
     cursor: pointer !important;
     transition: background 0.18s, border-color 0.18s, color 0.18s !important;
-    font-family: 'Outfit', sans-serif !important;
+    font-family: 'DM Sans', sans-serif !important;
     font-size: 0.875rem !important;
     font-weight: 500 !important;
     color: rgba(139,160,184,0.7) !important;
@@ -130,51 +125,48 @@ html, body, [class*="css"] {{
 
 /* ── Headers ── */
 h1 {{
-    font-family: 'Syne', sans-serif !important;
-    font-size: 2.4rem !important;
-    font-weight: 800 !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 2rem !important;
+    font-weight: 600 !important;
     color: {TEXT1} !important;
-    letter-spacing: -0.035em !important;
-    line-height: 1.05 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.1 !important;
     margin-bottom: 0.3rem !important;
 }}
 h2, h3 {{
-    font-family: 'Syne', sans-serif !important;
-    font-size: 0.6rem !important;
-    font-weight: 700 !important;
-    color: rgba(0,212,255,0.5) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+    color: rgba(139,160,184,0.6) !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.18em !important;
-    margin-top: 2.5rem !important;
-    margin-bottom: 1rem !important;
-    border-bottom: 1px solid rgba(0,212,255,0.1) !important;
-    padding-bottom: 0.5rem !important;
+    letter-spacing: 0.08em !important;
+    margin-top: 2rem !important;
+    margin-bottom: 0.8rem !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    padding-bottom: 0.4rem !important;
 }}
 
 /* ── Metric cards ── */
 [data-testid="metric-container"] {{
-    background: {CARD_BG} !important;
-    border: 1px solid {BORDER} !important;
-    border-radius: 14px !important;
-    padding: 1.4rem 1.6rem !important;
-    backdrop-filter: blur(12px);
-    animation: fadeUp 0.5s ease both;
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 10px !important;
+    padding: 1.3rem 1.5rem !important;
 }}
 [data-testid="metric-container"]:hover {{
-    border-color: rgba(0,212,255,0.45) !important;
-    box-shadow: 0 0 28px rgba(0,212,255,0.12) !important;
+    border-color: rgba(255,255,255,0.14) !important;
 }}
 [data-testid="stMetricLabel"] > div {{
-    font-size: 0.62rem !important;
-    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.14em !important;
-    color: rgba(0,212,255,0.65) !important;
+    letter-spacing: 0.07em !important;
+    color: rgba(139,160,184,0.6) !important;
 }}
 [data-testid="stMetricValue"] {{
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 2rem !important;
-    font-weight: 500 !important;
+    font-family: 'DM Mono', monospace !important;
+    font-size: 1.9rem !important;
+    font-weight: 400 !important;
     color: {TEXT1} !important;
     letter-spacing: -0.02em !important;
 }}
@@ -185,7 +177,7 @@ h2, h3 {{
     border: 1px solid rgba(0,212,255,0.2) !important;
     color: {TEXT1} !important;
     border-radius: 8px !important;
-    font-family: 'Outfit', sans-serif !important;
+    font-family: 'DM Sans', sans-serif !important;
 }}
 [data-baseweb="input"] input:focus {{
     border-color: {PRIMARY} !important;
@@ -243,7 +235,7 @@ h2, h3 {{
 [data-testid="stCaptionContainer"] p, .stCaption {{
     color: rgba(0,212,255,0.5) !important;
     font-size: 0.72rem !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'DM Mono', monospace !important;
     letter-spacing: 0.03em !important;
 }}
 
@@ -268,7 +260,7 @@ def PL(title="", height=None, **kw):
     layout = dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(10,18,35,0.4)",
-        font=dict(family="Outfit", color=TEXT2, size=12),
+        font=dict(family="DM Sans", color=TEXT2, size=12),
         xaxis=dict(
             gridcolor="rgba(0,212,255,0.06)",
             linecolor="rgba(0,212,255,0.12)",
@@ -282,7 +274,7 @@ def PL(title="", height=None, **kw):
             tickfont=dict(color="rgba(139,160,184,0.7)", size=11),
         ),
         margin=dict(l=16, r=16, t=48 if title else 20, b=16),
-        title=dict(text=title, font=dict(family="Syne", color=TEXT1, size=13)),
+        title=dict(text=title, font=dict(family="DM Sans", color=TEXT1, size=13)),
         legend=dict(
             font=dict(color=TEXT2, size=11),
             bgcolor="rgba(0,0,0,0)",
@@ -292,7 +284,7 @@ def PL(title="", height=None, **kw):
         hoverlabel=dict(
             bgcolor="rgba(10,18,35,0.95)",
             bordercolor="rgba(0,212,255,0.3)",
-            font=dict(family="Outfit", color=TEXT1, size=12),
+            font=dict(family="DM Sans", color=TEXT1, size=12),
         ),
         coloraxis_colorbar=dict(
             tickfont=dict(color=TEXT2),
@@ -340,35 +332,45 @@ def topics_sample(n=8000):
         chunks.append(chunk.sample(min(n // 8, len(chunk)), random_state=42))
         if sum(len(c) for c in chunks) >= n:
             break
-    return pd.concat(chunks).head(n).reset_index(drop=True)
+    df = pd.concat(chunks).head(n).reset_index(drop=True)
+    # complaints_with_topics.csv has a known bug: dominant_topic only contains
+    # values 0 and 10. topic_vectors.csv holds the correct 0-9 assignments
+    # from the same LDA run (same row order, same length).
+    tv_path = os.path.join(OUTPUTS, "topic_vectors.csv")
+    if os.path.exists(tv_path):
+        tv = pd.read_csv(tv_path, usecols=["dominant_topic"])
+        df["dominant_topic"] = tv.loc[df.index, "dominant_topic"].values
+    return df
 
 
 # ── Custom HTML helpers ────────────────────────────────────────────────────────
 def stat_card(label, value, sub="", accent=PRIMARY, delay=0.0):
-    sub_html = f'<div style="font-size:0.75rem;color:{TEXT2};margin-top:0.35rem;">{sub}</div>' if sub else ""
+    sub_html = f'<div style="font-size:0.72rem;color:{TEXT2};margin-top:0.3rem;">{sub}</div>' if sub else ""
     return f"""
     <div style="
-        background:{CARD_BG}; border:1px solid {accent}28; border-radius:14px;
-        padding:1.4rem 1.6rem; animation:fadeUp 0.5s ease {delay}s both;
-        transition:border-color 0.25s,box-shadow 0.25s; position:relative; overflow:hidden;
+        background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+        border-left:3px solid {accent}; border-radius:8px; padding:1.3rem 1.5rem;
     ">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;
-            background:linear-gradient(90deg,transparent,{accent}55,transparent);"></div>
-        <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-            letter-spacing:0.14em;color:{accent}AA;font-family:'Outfit',sans-serif;
-            margin-bottom:0.55rem;">{label}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:500;
+        <div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;
+            letter-spacing:0.07em;color:rgba(139,160,184,0.55);font-family:'DM Sans', sans-serif;
+            margin-bottom:0.5rem;">{label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:1.9rem;font-weight:400;
             color:{TEXT1};letter-spacing:-0.02em;line-height:1;">{value}</div>
         {sub_html}
     </div>"""
 
 
+def short_label(s, n=30):
+    """Truncate long strings for chart axes; full text still shown on hover."""
+    return s if len(s) <= n else s[:n - 1] + "…"
+
+
 def section_label(text):
     st.markdown(
-        f'<div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;'
-        f'letter-spacing:0.18em;color:rgba(0,212,255,0.45);font-family:\'JetBrains Mono\',monospace;'
-        f'border-bottom:1px solid rgba(0,212,255,0.1);padding-bottom:0.45rem;'
-        f'margin-top:2.25rem;margin-bottom:0.9rem;">{text}</div>',
+        f'<div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;'
+        f'letter-spacing:0.07em;color:rgba(139,160,184,0.55);font-family:\'DM Mono\',monospace;'
+        f'border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:0.4rem;'
+        f'margin-top:2rem;margin-bottom:0.85rem;">{text}</div>',
         unsafe_allow_html=True,
     )
 
@@ -377,10 +379,10 @@ def section_label(text):
 with st.sidebar:
     st.markdown(f"""
     <div style="padding:0.9rem 0 1.4rem;border-bottom:1px solid {BORDER};margin-bottom:1.2rem;">
-        <div style="font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;
-            color:{TEXT1};letter-spacing:-0.02em;">⚡ CFPB Intelligence</div>
+        <div style="font-family:'DM Sans', sans-serif;font-size:1.05rem;font-weight:600;
+            color:{TEXT1};letter-spacing:-0.01em;">⚡ CFPB Intelligence</div>
         <div style="font-size:0.62rem;color:rgba(0,212,255,0.45);text-transform:uppercase;
-            letter-spacing:0.12em;margin-top:5px;font-family:'JetBrains Mono',monospace;">
+            letter-spacing:0.12em;margin-top:5px;font-family:'DM Mono',monospace;">
             IS450 · Group 4 · Text Mining
         </div>
     </div>
@@ -396,7 +398,7 @@ with st.sidebar:
     st.markdown(f"""
     <div style="margin-top:1.6rem;margin-bottom:0.55rem;">
         <span style="font-size:0.58rem;font-weight:700;color:rgba(0,212,255,0.35);
-            text-transform:uppercase;letter-spacing:0.18em;font-family:'JetBrains Mono',monospace;">
+            text-transform:uppercase;letter-spacing:0.18em;font-family:'DM Mono',monospace;">
             Pipeline Status
         </span>
     </div>""", unsafe_allow_html=True)
@@ -490,7 +492,7 @@ if "Overview" in page:
             fig2.add_annotation(
                 text="<b>5</b><br><span style='font-size:10px'>classes</span>",
                 x=0.5, y=0.5,
-                font=dict(size=16, color=TEXT1, family="Syne"),
+                font=dict(size=16, color=TEXT1, family="DM Sans"),
                 showarrow=False,
             )
             fig2.update_layout(**PL(height=270))
@@ -503,9 +505,10 @@ if "Overview" in page:
         tc = td_topics["dominant_topic"].value_counts().reset_index()
         tc.columns = ["topic", "count"]
         if tlabels:
-            tc["label"] = tc["topic"].astype(str).map({str(k): v for k, v in tlabels.items()}).fillna("Topic " + tc["topic"].astype(str))
+            tc["full_label"] = tc["topic"].astype(str).map({str(k): v for k, v in tlabels.items()}).fillna("Topic " + tc["topic"].astype(str))
         else:
-            tc["label"] = "Topic " + tc["topic"].astype(str)
+            tc["full_label"] = "Topic " + tc["topic"].astype(str)
+        tc["label"] = tc["full_label"].apply(short_label)
 
         n = len(tc)
         grad = px.colors.sample_colorscale(
@@ -516,7 +519,8 @@ if "Overview" in page:
             x=tc["count"], y=tc["label"], orientation="h",
             marker=dict(color=grad, line_width=0),
             opacity=0.85,
-            hovertemplate="<b>%{y}</b><br>%{x:,} complaints<extra></extra>",
+            customdata=tc["full_label"],
+            hovertemplate="<b>%{customdata}</b><br>%{x:,} complaints<extra></extra>",
         ))
         fig3.update_layout(**PL("Dominant topic — sampled 5,000 complaints", height=340))
         fig3.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
@@ -567,16 +571,16 @@ elif "Classification" in page:
             x=[f1], y=[label], orientation="h",
             marker_color=color, marker_line_width=0,
             text=[f"{f1:.2f}"], textposition="inside",
-            textfont=dict(color=TEXT1, size=12, family="JetBrains Mono"),
+            textfont=dict(color=TEXT1, size=12, family="DM Mono"),
             hovertemplate=f"<b>{label}</b><br>F1: {f1:.4f}<extra></extra>",
             showlegend=False,
         ))
-    fig.add_vline(x=0.85, line_dash="dash", line_color=f"{DANGER}80",
+    fig.add_vline(x=0.85, line_dash="dash", line_color="rgba(255,71,87,0.5)",
                   annotation_text="0.85 target",
                   annotation_font_color=DANGER, annotation_font_size=11,
                   annotation_position="top right")
-    fig.update_layout(**PL(height=240), barmode="overlay", showlegend=False,
-                      xaxis=dict(range=[0, 1], tickformat=".0%"))
+    fig.update_layout(**PL(height=240), barmode="overlay", showlegend=False)
+    fig.update_xaxes(range=[0, 1], tickformat=".0%")
     fig.update_yaxes(tickfont=dict(size=12, color="#C8D8E8"))
     st.plotly_chart(fig, use_container_width=True)
 
@@ -588,14 +592,14 @@ elif "Classification" in page:
         x=mdf["Macro F1"], y=mdf["Model"], orientation="h",
         marker_color=colors_m, marker_line_width=0, opacity=0.85,
         text=[f"{v:.4f}" for v in mdf["Macro F1"]], textposition="inside",
-        textfont=dict(color=TEXT1, size=12, family="JetBrains Mono"),
+        textfont=dict(color=TEXT1, size=12, family="DM Mono"),
         hovertemplate="<b>%{y}</b><br>Macro F1: %{x:.4f}<extra></extra>",
     ))
-    fig_m.add_vline(x=0.85, line_dash="dash", line_color=f"{DANGER}80",
+    fig_m.add_vline(x=0.85, line_dash="dash", line_color="rgba(255,71,87,0.5)",
                     annotation_text="0.85 target",
                     annotation_font_color=DANGER, annotation_font_size=11)
-    fig_m.update_layout(**PL(height=200), showlegend=False,
-                         xaxis=dict(range=[0.78, 0.88], tickformat=".2f"))
+    fig_m.update_layout(**PL(height=200), showlegend=False)
+    fig_m.update_xaxes(range=[0.78, 0.88], tickformat=".2f")
     fig_m.update_yaxes(tickfont=dict(size=12, color="#C8D8E8"))
     st.plotly_chart(fig_m, use_container_width=True)
 
@@ -652,11 +656,11 @@ elif "Classification" in page:
                 x=acc_df["accuracy"], y=acc_df["label"], orientation="h",
                 marker=dict(color=list(acc_df["color"]), line_width=0), opacity=0.85,
                 text=[f"{v:.1%}" for v in acc_df["accuracy"]], textposition="inside",
-                textfont=dict(color=TEXT1, family="JetBrains Mono", size=12),
+                textfont=dict(color=TEXT1, family="DM Mono", size=12),
                 hovertemplate="<b>%{y}</b><br>Accuracy: %{x:.2%}<extra></extra>",
             ))
-            fig_acc.update_layout(**PL(height=230), showlegend=False,
-                                   xaxis=dict(range=[0, 1], tickformat=".0%"))
+            fig_acc.update_layout(**PL(height=230), showlegend=False)
+            fig_acc.update_xaxes(range=[0, 1], tickformat=".0%")
             fig_acc.update_yaxes(tickfont=dict(size=12, color="#C8D8E8"))
             st.plotly_chart(fig_acc, use_container_width=True)
 
@@ -718,7 +722,7 @@ elif "Risk" in page:
             fig_d.add_annotation(
                 text=f"<b>{total_ann}</b><br>samples",
                 x=0.5, y=0.5,
-                font=dict(size=15, color=TEXT1, family="Syne"),
+                font=dict(size=15, color=TEXT1, family="DM Sans"),
                 showarrow=False,
             )
             fig_d.update_layout(**PL(height=300))
@@ -740,8 +744,8 @@ elif "Risk" in page:
                     text=cross["pct"].round(0).astype(int).astype(str) + "%",
                     labels={"pct": "Share (%)", "prod_label": "", "risk_label": "Risk"},
                 )
+                fig_s.update_layout(**PL("Risk label share by product category", height=300))
                 fig_s.update_layout(
-                    **PL("Risk label share by product category", height=300),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                     xaxis=dict(range=[0, 100], ticksuffix="%"),
                 )
@@ -824,7 +828,9 @@ elif "Topic" in page:
 
     topics_list = sorted(td_topics["dominant_topic"].unique())
     lmap = {i: tlabels.get(str(i), f"Topic {i}") for i in topics_list} if tlabels else {i: f"Topic {i}" for i in topics_list}
-    td_topics["topic_label"]   = td_topics["dominant_topic"].map(lmap)
+    lmap_short = {i: short_label(v) for i, v in lmap.items()}
+    td_topics["topic_label"]       = td_topics["dominant_topic"].map(lmap)
+    td_topics["topic_label_short"] = td_topics["dominant_topic"].map(lmap_short)
     if "product" in td_topics.columns:
         td_topics["product_label"] = td_topics["product"].str.replace("_", " ").str.title()
 
@@ -832,7 +838,7 @@ elif "Topic" in page:
     if "product" in td_topics.columns:
         section_label("Topic Distribution by Product — Interactive Sunburst")
         sun_data = (
-            td_topics.groupby(["product_label", "topic_label"])
+            td_topics.groupby(["product_label", "topic_label_short"])
             .size().reset_index(name="count")
         )
         product_color_map = {
@@ -844,7 +850,7 @@ elif "Topic" in page:
         }
         fig_sun = px.sunburst(
             sun_data,
-            path=["product_label", "topic_label"],
+            path=["product_label", "topic_label_short"],
             values="count",
             color="product_label",
             color_discrete_map=product_color_map,
@@ -859,8 +865,8 @@ elif "Topic" in page:
 
     # ── Topic volume bar ──
     section_label("Complaint Volume by Topic")
-    tc = td_topics["topic_label"].value_counts().reset_index()
-    tc.columns = ["label", "count"]
+    tc = td_topics[["topic_label", "topic_label_short"]].value_counts().reset_index()
+    tc.columns = ["full_label", "label", "count"]
     n = len(tc)
     grad = px.colors.sample_colorscale(
         [[0, PRIMARY], [0.45, PURPLE], [1.0, SECONDARY]],
@@ -870,12 +876,19 @@ elif "Topic" in page:
         x=tc["count"], y=tc["label"], orientation="h",
         marker=dict(color=grad, line_width=0), opacity=0.85,
         text=tc["count"], textposition="auto",
-        textfont=dict(family="JetBrains Mono", size=11, color=TEXT1),
-        hovertemplate="<b>%{y}</b><br>%{x:,} complaints<extra></extra>",
+        textfont=dict(family="DM Mono", size=11, color=TEXT1),
+        customdata=tc["full_label"],
+        hovertemplate="<b>%{customdata}</b><br>%{x:,} complaints<extra></extra>",
     ))
     fig_v.update_layout(**PL("Sampled 10,000 complaints", height=360))
     fig_v.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
     st.plotly_chart(fig_v, use_container_width=True)
+
+    # ── Topic × Product heatmap image ──
+    hm_path = os.path.join(OUTPUTS, "topic_category_heatmap.png")
+    if os.path.exists(hm_path):
+        section_label("Topic × Product Category Heatmap")
+        st.image(hm_path, use_container_width=True)
 
     # ── Topic keywords image ──
     kw_path = os.path.join(OUTPUTS, "topic_keywords.png")
