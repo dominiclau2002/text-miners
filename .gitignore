@@ -18,6 +18,7 @@ data/train_indices.csv
 
 
 #outputs/
+outputs/task3_bert_model/
 
 
 #Python
