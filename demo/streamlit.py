@@ -333,13 +333,14 @@ def topics_sample(n=8000):
         if sum(len(c) for c in chunks) >= n:
             break
     df = pd.concat(chunks).head(n).reset_index(drop=True)
-    # complaints_with_topics.csv has a known bug: dominant_topic only contains
-    # values 0 and 10. topic_vectors.csv holds the correct 0-9 assignments
-    # from the same LDA run (same row order, same length).
+    # Recompute dominant_topic from the topic vector columns so this works even
+    # when topic_vectors.csv does not include a dominant_topic column.
     tv_path = os.path.join(OUTPUTS, "topic_vectors.csv")
     if os.path.exists(tv_path):
-        tv = pd.read_csv(tv_path, usecols=["dominant_topic"])
-        df["dominant_topic"] = tv.loc[df.index, "dominant_topic"].values
+        tv = pd.read_csv(tv_path)
+        topic_cols = [c for c in tv.columns if c.startswith("topic_")]
+        if topic_cols:
+            df["dominant_topic"] = tv.loc[df.index, topic_cols].idxmax(axis=1).str.replace("topic_", "", regex=False).astype(int).values
     return df
 
 
@@ -891,7 +892,9 @@ elif "Topic" in page:
         st.image(hm_path, use_container_width=True)
 
     # ── Topic keywords image ──
-    kw_path = os.path.join(OUTPUTS, "topic_keywords.png")
+    kw_labeled_path = os.path.join(OUTPUTS, "topic_keywords_labeled.png")
+    kw_default_path = os.path.join(OUTPUTS, "topic_keywords.png")
+    kw_path = kw_labeled_path if os.path.exists(kw_labeled_path) else kw_default_path
     if os.path.exists(kw_path):
         section_label("Top Keywords per Topic")
         st.image(kw_path, use_container_width=True)
