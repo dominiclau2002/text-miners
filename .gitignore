@@ -47,3 +47,7 @@ desktop.ini
 .idea/
 
 .claude/
+task1_topic_modelling/topic_modelling.py
+task2_classification/classification.py
+task3_risk_rating/risk_rating.py
+task3_risk_rating/risk_rating2.py
