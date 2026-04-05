@@ -1,0 +1,81 @@
+{
+  "Garnishment & Wage Seizure": {
+    "count": 0,
+    "description": "Complaints mentioning wage garnishment, bank levies, or debt seizure",
+    "keywords": [
+      "\\bgarnish",
+      "\\bwage.*levy",
+      "\\bbank.*levy",
+      "\\bgarni"
+    ]
+  },
+  "Identity Theft & Fraud": {
+    "count": 16,
+    "description": "Accounts opened fraudulently or identity theft",
+    "keywords": [
+      "\\bidentity theft",
+      "\\bfraud",
+      "\\bunauthori[sz]ed.*account",
+      "\\bopened.*account.*name"
+    ]
+  },
+  "Financial Hardship": {
+    "count": 0,
+    "description": "Consumer cannot afford basic necessities (rent, food, etc.)",
+    "keywords": [
+      "\\bcannot (pay|afford)",
+      "\\bunable.*(pay|afford)",
+      "\\brent",
+      "\\beviction",
+      "\\bhomeless"
+    ]
+  },
+  "FDCPA Violations": {
+    "count": 3,
+    "description": "Alleged violations of Fair Debt Collection Practices Act",
+    "keywords": [
+      "\\bfdcpa",
+      "\\bfair debt.*collection",
+      "\\bviolat.*collection",
+      "\\billegal.*collect"
+    ]
+  },
+  "Legal Action": {
+    "count": 3,
+    "description": "Active lawsuits or legal proceedings",
+    "keywords": [
+      "\\bsued",
+      "\\blawsuit",
+      "\\bcourt",
+      "\\battorney.*filed",
+      "\\bsum[m]ons"
+    ]
+  },
+  "Protected Classes": {
+    "count": 0,
+    "description": "Complaints involving elderly, fixed income, or military consumers",
+    "keywords": [
+      "\\belderly",
+      "\\bsenior",
+      "\\bfixed income",
+      "\\bmilitary",
+      "\\bveteran",
+      "\\bscra"
+    ]
+  },
+  "Credit Damage": {
+    "count": 3,
+    "description": "Negative impact on credit score or report",
+    "keywords": [
+      "\\bcredit score",
+      "\\bcredit rating",
+      "\\bdamaged.*credit",
+      "\\baffect.*credit"
+    ]
+  },
+  "Other": {
+    "count": 9,
+    "description": "Complaints not matching other cluster keywords",
+    "keywords": []
+  }
+}

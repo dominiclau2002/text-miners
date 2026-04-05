@@ -1,0 +1,6 @@
+cluster,count,dominant_product
+Credit Damage,3,credit_reporting
+FDCPA Violations,3,debt_collection
+Identity Theft & Fraud,16,credit_reporting
+Legal Action,3,credit_reporting
+Other,9,credit_reporting
