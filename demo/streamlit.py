@@ -391,7 +391,7 @@ with st.sidebar:
 
     page = st.radio(
         "nav",
-        ["🏠  Overview", "🏷️  Classification", "⚠️  Risk Queue", "📊  Risk Clustering", "🔍  Topic Explorer"],
+        ["🏠  Overview", "🏷️  Classification", "⚠️  Risk Queue", "🤖  LLM Analysis", "🔍  Topic Explorer"],
         label_visibility="collapsed",
         key="sidebar_nav",
     )
@@ -859,160 +859,177 @@ elif "Risk Queue" in page:
 # ──────────────────────────────────────────────────────────────────────────────
 #  PAGE 3b — RISK CLUSTERING
 # ──────────────────────────────────────────────────────────────────────────────
-elif "Clustering" in page:
+# ──────────────────────────────────────────────────────────────────────────────
+#  PAGE 4 — TOPIC EXPLORER
+# ──────────────────────────────────────────────────────────────────────────────
+elif "LLM Analysis" in page:
 
-    st.title("Risk Clustering — Semantic Analysis")
+    st.title("Advanced LLM Analysis — Qwen Intelligence")
     st.markdown(
-        f'<p style="font-size:1rem;color:{TEXT2};margin:0.2rem 0 2.5rem;">Discover complaint patterns within HIGH-risk tier · root-cause analysis · regulatory insight · emerging issue detection</p>',
+        f'<p style="font-size:1rem;color:{TEXT2};margin:0.2rem 0 2.5rem;">Semantic understanding of all test complaints · root cause analysis · consumer harm assessment · triage reasoning</p>',
         unsafe_allow_html=True,
     )
 
-    # Load clustering data
-    clustering_folder = os.path.join(OUTPUTS, "task3_clustering")
-    cluster_csv = csv("high_risk_clustered.csv", folder=clustering_folder)
+    # Load Gemini analysis
+    gemini_folder = os.path.join(OUTPUTS, "task3_gemini")
+    gemini_csv_path = os.path.join(gemini_folder, "gemini_complaint_analysis.csv")
+    gemini_summary_path = os.path.join(gemini_folder, "analysis_summary.json")
 
-    # Load cluster definitions (custom JSON loader for clustering folder)
-    cluster_defs_path = os.path.join(clustering_folder, "cluster_definitions.json")
-    cluster_defs = json.load(open(cluster_defs_path)) if os.path.exists(cluster_defs_path) else None
+    if os.path.exists(gemini_csv_path):
+        gemini_df = pd.read_csv(gemini_csv_path)
+        with open(gemini_summary_path) as f:
+            gemini_summary = json.load(f)
 
-    if cluster_csv is not None:
-        # ── Cluster distribution ──
-        section_label("Cluster Distribution — HIGH-Risk Complaints")
+        # ── Summary metrics ──
+        section_label("Analysis Overview")
+        c1, c2, c3, c4 = st.columns(4)
 
-        cluster_counts = cluster_csv["cluster"].value_counts()
-        c1, c2, c3 = st.columns([1.2, 1.3, 1])
-
-        # Bar chart
         with c1:
-            fig_dist = go.Figure(go.Bar(
-                y=cluster_counts.index,
-                x=cluster_counts.values,
+            st.metric("Complaints Analyzed", len(gemini_df))
+        with c2:
+            root_causes = len(set(gemini_df['root_cause']))
+            st.metric("Unique Root Causes", root_causes)
+        with c3:
+            high_risk = (gemini_df.get('predicted_risk', pd.Series()) == 'high').sum() if 'predicted_risk' in gemini_df.columns else 0
+            st.metric("High Risk", high_risk)
+        with c4:
+            high_severity = (gemini_df['severity'] == 'high').sum()
+            st.metric("High Severity", high_severity)
+
+        st.markdown("---")
+
+        # ── Root causes ──
+        section_label("Root Cause Analysis")
+        col_causes, col_stats = st.columns([1.5, 1])
+
+        with col_causes:
+            cause_counts = gemini_df['root_cause'].value_counts()
+            fig_causes = go.Figure(go.Bar(
+                y=cause_counts.index,
+                x=cause_counts.values,
                 orientation="h",
-                marker=dict(color=SECONDARY, line_width=0),
+                marker=dict(color=PRIMARY, line_width=0),
                 opacity=0.85,
-                text=cluster_counts.values,
+                text=cause_counts.values,
                 textposition="auto",
                 textfont=dict(family="DM Mono", size=11, color=TEXT1),
                 hovertemplate="<b>%{y}</b><br>%{x} complaints<extra></extra>",
             ))
-            fig_dist.update_layout(**PL(f"n={len(cluster_csv)}", height=320))
-            fig_dist.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
-            st.plotly_chart(fig_dist, use_container_width=True)
+            fig_causes.update_layout(**PL(f"n={len(gemini_df)}", height=320))
+            fig_causes.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
+            st.plotly_chart(fig_causes, use_container_width=True)
 
-        # Summary stats
-        with c2:
+        with col_stats:
             st.markdown("---")
-            st.markdown(f'<div style="padding:1rem;"><span style="font-size:0.85rem;color:{TEXT2};">Cluster Breakdown</span></div>', unsafe_allow_html=True)
-            for cluster_name, count in cluster_counts.items():
-                pct = 100 * count / len(cluster_csv)
-                bar_width = pct / 100
+            st.markdown(f'<div style="padding:1rem;"><span style="font-size:0.85rem;color:{TEXT2};">Severity Breakdown</span></div>', unsafe_allow_html=True)
+            for severity in ['high', 'medium', 'low']:
+                count = (gemini_df['severity'] == severity).sum()
+                pct = 100 * count / len(gemini_df) if len(gemini_df) > 0 else 0
+                color_map = {'high': DANGER, 'medium': WARNING, 'low': SUCCESS}
                 st.markdown(
-                    f'<div style="margin-bottom:12px;">'
-                    f'<div style="font-size:0.8rem;margin-bottom:4px;color:{TEXT1};">{cluster_name}</div>'
-                    f'<div style="background:rgba(0,212,255,0.1);border-radius:3px;height:6px;overflow:hidden;">'
-                    f'<div style="background:{SECONDARY};height:100%;width:{bar_width*100}%;"></div>'
-                    f'</div>'
-                    f'<div style="font-size:0.7rem;color:{TEXT2};margin-top:2px;">{count} · {pct:.1f}%</div>'
+                    f'<div style="margin-bottom:12px;padding:10px;background:rgba(0,212,255,0.05);border-radius:6px;">'
+                    f'<div style="color:{color_map.get(severity, TEXT1)};font-weight:600;">{severity.title()}</div>'
+                    f'<div style="font-size:0.9rem;color:{TEXT2};">{count} · {pct:.0f}%</div>'
                     f'</div>',
                     unsafe_allow_html=True
                 )
 
-        # Total stats
-        with c3:
+        # ── Risk level filter ──
+        if 'predicted_risk' in gemini_df.columns:
             st.markdown("---")
-            st.metric("Total Complaints", f"{len(cluster_csv)}", delta="HIGH-risk subset", delta_color="off")
-            st.metric("Clusters Found", cluster_counts.nunique(), delta="semantic themes", delta_color="off")
-            st.metric("Dominant Cluster", cluster_counts.index[0], delta=f"{cluster_counts.iloc[0]/len(cluster_csv):.1%}", delta_color="off")
+            section_label("Risk Level Distribution")
+            risk_counts = gemini_df['predicted_risk'].value_counts()
+            fig_risk = go.Figure(go.Bar(
+                x=risk_counts.index,
+                y=risk_counts.values,
+                marker=dict(color=[DANGER if r == 'high' else (WARNING if r == 'medium' else SUCCESS) for r in risk_counts.index], line_width=0),
+                opacity=0.85,
+                text=risk_counts.values,
+                textposition="auto",
+                hovertemplate="<b>%{x}</b><br>%{y} complaints<extra></extra>",
+            ))
+            fig_risk.update_layout(**PL(height=220), showlegend=False)
+            st.plotly_chart(fig_risk, use_container_width=True)
 
-        # ── Product × Cluster heatmap ──
+        # ── Consumer harm types ──
         st.markdown("---")
-        section_label("Product × Cluster Cross-Tabulation")
+        section_label("Consumer Harm Types")
 
-        hm_path = os.path.join(clustering_folder, "product_cluster_heatmap.png")
-        if os.path.exists(hm_path):
-            col_img, col_info = st.columns([1.5, 1])
-            with col_img:
-                st.image(hm_path, use_container_width=True)
-            with col_info:
-                st.markdown(f'<div style="padding:1rem;"><span style="font-size:0.85rem;color:{TEXT2};">Insight</span></div>', unsafe_allow_html=True)
-                st.markdown(f'<div style="font-size:0.85rem;line-height:1.6;color:{TEXT1};">'
-                           f'Product categories show distinct complaint patterns. '
-                           f'<b style="color:{SECONDARY};">Credit Reporting</b> dominates HIGH-risk tier, '
-                           f'particularly in Identity Theft & Fraud cluster.'
-                           f'</div>', unsafe_allow_html=True)
+        harm_counts = gemini_df['consumer_harm'].value_counts()
+        fig_harm = go.Figure(go.Pie(
+            labels=harm_counts.index,
+            values=harm_counts.values,
+            hole=0.5,
+            marker=dict(colors=[DANGER, WARNING, SUCCESS, PRIMARY, PURPLE][:len(harm_counts)]),
+            textinfo="percent+label",
+            textfont=dict(size=11, color=TEXT1),
+            hovertemplate="<b>%{label}</b><br>%{value} · %{percent}<extra></extra>",
+        ))
+        fig_harm.update_layout(**PL(height=300))
+        st.plotly_chart(fig_harm, use_container_width=True)
 
-        # ── Cluster browser ──
+        # ── Complaint browser ──
         st.markdown("---")
-        section_label("Browse Complaints by Cluster")
+        section_label("Browse Analyzed Complaints")
 
-        selected_cluster = st.selectbox(
-            "Select cluster to view complaints:",
-            options=cluster_counts.index.tolist(),
-            placeholder="Choose a cluster…"
-        )
-
-        if selected_cluster:
-            cluster_subset = cluster_csv[cluster_csv["cluster"] == selected_cluster]
-
-            # Cluster definition
-            if cluster_defs and selected_cluster in cluster_defs:
-                cluster_info = cluster_defs[selected_cluster]
-                st.markdown(
-                    f'<div style="padding:12px;border-left:3px solid {SECONDARY};background:rgba(255,140,66,0.05);margin-bottom:1rem;">'
-                    f'<b>{selected_cluster}</b><br>'
-                    f'<span style="font-size:0.85rem;color:{TEXT2};">{cluster_info.get("description", "")}</span>'
-                    f'</div>',
-                    unsafe_allow_html=True
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            filter_cause = st.selectbox(
+                "Filter by root cause:",
+                ["All"] + sorted(gemini_df['root_cause'].unique().tolist())
+            )
+        with col_f2:
+            if 'predicted_risk' in gemini_df.columns:
+                filter_risk = st.selectbox(
+                    "Filter by risk level:",
+                    ["All", "high", "medium", "low"]
                 )
+            else:
+                filter_risk = "All"
 
-            # Summary
-            st.caption(f"**{len(cluster_subset)}** complaints in **{selected_cluster}** cluster")
+        filtered_df = gemini_df.copy()
+        if filter_cause != "All":
+            filtered_df = filtered_df[filtered_df['root_cause'] == filter_cause]
+        if filter_risk != "All" and 'predicted_risk' in gemini_df.columns:
+            filtered_df = filtered_df[filtered_df['predicted_risk'] == filter_risk]
 
-            # Product breakdown
-            if "product" in cluster_subset.columns:
-                prod_breakdown = cluster_subset["product"].value_counts()
-                fig_prod = go.Figure(go.Bar(
-                    x=prod_breakdown.values,
-                    y=prod_breakdown.index,
-                    orientation="h",
-                    marker=dict(color=PRIMARY, line_width=0),
-                    opacity=0.85,
-                    hovertemplate="<b>%{y}</b><br>%{x}<extra></extra>",
-                ))
-                fig_prod.update_layout(**PL(f"Product distribution — {selected_cluster}", height=200), showlegend=False)
-                fig_prod.update_yaxes(tickfont=dict(size=10, color="#C8D8E8"))
-                st.plotly_chart(fig_prod, use_container_width=True)
+        st.caption(f"**{len(filtered_df)}** complaints")
 
-            # Complaints table — custom HTML for contrast
-            display_df = cluster_subset[["narrative", "product", "cluster"]].head(10).reset_index(drop=True)
+        # Determine display columns based on available data
+        available_cols = [c for c in ["narrative", "product", "predicted_risk", "root_cause", "consumer_harm", "severity", "explanation"] if c in filtered_df.columns]
+        display_df = filtered_df[available_cols].head(20).reset_index(drop=True)
 
-            # Build HTML table with white text
-            html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">'
-            html_table += f'<thead><tr style="background:rgba(0,212,255,0.1);border-bottom:1px solid {BORDER};">'
+        html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">'
+        html_table += f'<thead><tr style="background:rgba(0,212,255,0.1);border-bottom:1px solid {BORDER};">'
+        for col in display_df.columns:
+            html_table += f'<th style="padding:8px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.replace("_", " ").title()}</th>'
+        html_table += '</tr></thead>'
+
+        html_table += '<tbody>'
+        for idx, row in display_df.iterrows():
+            bg = "rgba(0,212,255,0.05)" if idx % 2 == 0 else "transparent"
+            html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
             for col in display_df.columns:
-                html_table += f'<th style="padding:10px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col}</th>'
-            html_table += '</tr></thead>'
+                text = str(row[col])
+                if col == "narrative" and len(text) > 100:
+                    text = text[:100] + "..."
+                if col == "severity":
+                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
+                    html_table += f'<td style="padding:8px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
+                elif col == "predicted_risk":
+                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
+                    html_table += f'<td style="padding:8px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
+                else:
+                    html_table += f'<td style="padding:8px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
+            html_table += '</tr>'
+        html_table += '</tbody></table>'
 
-            html_table += '<tbody>'
-            for idx, row in display_df.iterrows():
-                bg = "rgba(0,212,255,0.05)" if idx % 2 == 0 else "transparent"
-                html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
-                for col in display_df.columns:
-                    text = str(row[col])
-                    if len(text) > 120:
-                        text = text[:120] + "..."
-                    html_table += f'<td style="padding:10px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
-                html_table += '</tr>'
-            html_table += '</tbody></table>'
+        st.markdown(html_table, unsafe_allow_html=True)
 
-            st.markdown(html_table, unsafe_allow_html=True)
     else:
-        st.info("Run `python task3_risk_rating/task3_risk_clustering.py` to generate risk clustering analysis.")
+        st.info("Run `python task3_risk_rating/task3_qwen_analysis.py` from the project root to generate LLM analysis for all test complaints.")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-#  PAGE 4 — TOPIC EXPLORER
-# ──────────────────────────────────────────────────────────────────────────────
 elif "Topic" in page:
 
     st.title("Topic Discovery Explorer")
