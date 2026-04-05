@@ -391,7 +391,7 @@ with st.sidebar:
 
     page = st.radio(
         "nav",
-        ["🏠  Overview", "🏷️  Classification", "⚠️  Risk Queue", "🔍  Topic Explorer"],
+        ["🏠  Overview", "🏷️  Classification", "⚠️  Risk Queue", "🤖  LLM Analysis", "🔍  Topic Explorer"],
         label_visibility="collapsed",
         key="sidebar_nav",
     )
@@ -670,8 +670,29 @@ elif "Classification" in page:
         if q:
             filt = class_res[class_res["narrative"].str.contains(q, case=False, na=False)].head(20)
             st.caption(f"{len(filt):,} results for '{q}'")
-            st.dataframe(filt[["narrative", "product", "predicted_product"]],
-                         use_container_width=True, hide_index=True)
+
+            # Custom HTML table with white text for high contrast
+            display_df = filt[["narrative", "product", "predicted_product"]].reset_index(drop=True)
+
+            html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">'
+            html_table += f'<thead><tr style="background:rgba(0,212,255,0.1);border-bottom:1px solid {BORDER};">'
+            for col in display_df.columns:
+                html_table += f'<th style="padding:10px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.replace("_", " ").title()}</th>'
+            html_table += '</tr></thead>'
+
+            html_table += '<tbody>'
+            for idx, row in display_df.iterrows():
+                bg = "rgba(0,212,255,0.05)" if idx % 2 == 0 else "transparent"
+                html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
+                for col in display_df.columns:
+                    text = str(row[col])
+                    if col == "narrative" and len(text) > 120:
+                        text = text[:120] + "..."
+                    html_table += f'<td style="padding:10px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
+                html_table += '</tr>'
+            html_table += '</tbody></table>'
+
+            st.markdown(html_table, unsafe_allow_html=True)
     else:
         st.info("Export `outputs/classification_results.csv` from `task2_classification/classification.ipynb` to unlock full prediction results here.")
 
@@ -679,7 +700,7 @@ elif "Classification" in page:
 # ──────────────────────────────────────────────────────────────────────────────
 #  PAGE 3 — RISK QUEUE
 # ──────────────────────────────────────────────────────────────────────────────
-elif "Risk" in page:
+elif "Risk Queue" in page:
 
     st.title("Risk Priority Queue")
     st.markdown(
@@ -803,15 +824,212 @@ elif "Risk" in page:
             st.markdown(f'<div style="padding-top:30px;font-size:0.8rem;color:{DANGER};font-family:\'JetBrains Mono\',monospace;">{len(high_df):,} high-risk</div>', unsafe_allow_html=True)
         if fp != "All":
             high_df = high_df[high_df["product"] == fp]
-        st.dataframe(high_df[["narrative", "product", "predicted_risk"]].head(50),
-                     use_container_width=True, hide_index=True)
+
+        # Custom HTML table with white text for high contrast
+        display_df = high_df[["narrative", "product", "predicted_risk"]].head(50).reset_index(drop=True)
+
+        html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">'
+        html_table += f'<thead><tr style="background:rgba(255,71,87,0.1);border-bottom:1px solid {BORDER};">'
+        for col in display_df.columns:
+            html_table += f'<th style="padding:10px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.replace("_", " ").title()}</th>'
+        html_table += '</tr></thead>'
+
+        html_table += '<tbody>'
+        for idx, row in display_df.iterrows():
+            bg = "rgba(255,71,87,0.05)" if idx % 2 == 0 else "transparent"
+            html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
+            for col in display_df.columns:
+                text = str(row[col])
+                if col == "narrative" and len(text) > 120:
+                    text = text[:120] + "..."
+                # Color-code risk level
+                if col == "predicted_risk":
+                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
+                    html_table += f'<td style="padding:10px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
+                else:
+                    html_table += f'<td style="padding:10px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
+            html_table += '</tr>'
+        html_table += '</tbody></table>'
+
+        st.markdown(html_table, unsafe_allow_html=True)
     else:
         st.info("Export `outputs/risk_results.csv` from `task3_risk_rating/risk_rating.ipynb` to see full predicted risk results here.")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+#  PAGE 3b — RISK CLUSTERING
+# ──────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 #  PAGE 4 — TOPIC EXPLORER
 # ──────────────────────────────────────────────────────────────────────────────
+elif "LLM Analysis" in page:
+
+    st.title("Advanced LLM Analysis — Qwen Intelligence")
+    st.markdown(
+        f'<p style="font-size:1rem;color:{TEXT2};margin:0.2rem 0 2.5rem;">Semantic understanding of all test complaints · root cause analysis · consumer harm assessment · triage reasoning</p>',
+        unsafe_allow_html=True,
+    )
+
+    # Load Gemini analysis
+    gemini_folder = os.path.join(OUTPUTS, "task3_gemini")
+    gemini_csv_path = os.path.join(gemini_folder, "gemini_complaint_analysis.csv")
+    gemini_summary_path = os.path.join(gemini_folder, "analysis_summary.json")
+
+    if os.path.exists(gemini_csv_path):
+        gemini_df = pd.read_csv(gemini_csv_path)
+        with open(gemini_summary_path) as f:
+            gemini_summary = json.load(f)
+
+        # ── Summary metrics ──
+        section_label("Analysis Overview")
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.metric("Complaints Analyzed", len(gemini_df))
+        with c2:
+            root_causes = len(set(gemini_df['root_cause']))
+            st.metric("Unique Root Causes", root_causes)
+        with c3:
+            high_risk = (gemini_df.get('predicted_risk', pd.Series()) == 'high').sum() if 'predicted_risk' in gemini_df.columns else 0
+            st.metric("High Risk", high_risk)
+        with c4:
+            high_severity = (gemini_df['severity'] == 'high').sum()
+            st.metric("High Severity", high_severity)
+
+        st.markdown("---")
+
+        # ── Root causes ──
+        section_label("Root Cause Analysis")
+        col_causes, col_stats = st.columns([1.5, 1])
+
+        with col_causes:
+            cause_counts = gemini_df['root_cause'].value_counts()
+            fig_causes = go.Figure(go.Bar(
+                y=cause_counts.index,
+                x=cause_counts.values,
+                orientation="h",
+                marker=dict(color=PRIMARY, line_width=0),
+                opacity=0.85,
+                text=cause_counts.values,
+                textposition="auto",
+                textfont=dict(family="DM Mono", size=11, color=TEXT1),
+                hovertemplate="<b>%{y}</b><br>%{x} complaints<extra></extra>",
+            ))
+            fig_causes.update_layout(**PL(f"n={len(gemini_df)}", height=320))
+            fig_causes.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
+            st.plotly_chart(fig_causes, use_container_width=True)
+
+        with col_stats:
+            st.markdown("---")
+            st.markdown(f'<div style="padding:1rem;"><span style="font-size:0.85rem;color:{TEXT2};">Severity Breakdown</span></div>', unsafe_allow_html=True)
+            for severity in ['high', 'medium', 'low']:
+                count = (gemini_df['severity'] == severity).sum()
+                pct = 100 * count / len(gemini_df) if len(gemini_df) > 0 else 0
+                color_map = {'high': DANGER, 'medium': WARNING, 'low': SUCCESS}
+                st.markdown(
+                    f'<div style="margin-bottom:12px;padding:10px;background:rgba(0,212,255,0.05);border-radius:6px;">'
+                    f'<div style="color:{color_map.get(severity, TEXT1)};font-weight:600;">{severity.title()}</div>'
+                    f'<div style="font-size:0.9rem;color:{TEXT2};">{count} · {pct:.0f}%</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
+        # ── Risk level filter ──
+        if 'predicted_risk' in gemini_df.columns:
+            st.markdown("---")
+            section_label("Risk Level Distribution")
+            risk_counts = gemini_df['predicted_risk'].value_counts()
+            fig_risk = go.Figure(go.Bar(
+                x=risk_counts.index,
+                y=risk_counts.values,
+                marker=dict(color=[DANGER if r == 'high' else (WARNING if r == 'medium' else SUCCESS) for r in risk_counts.index], line_width=0),
+                opacity=0.85,
+                text=risk_counts.values,
+                textposition="auto",
+                hovertemplate="<b>%{x}</b><br>%{y} complaints<extra></extra>",
+            ))
+            fig_risk.update_layout(**PL(height=220), showlegend=False)
+            st.plotly_chart(fig_risk, use_container_width=True)
+
+        # ── Consumer harm types ──
+        st.markdown("---")
+        section_label("Consumer Harm Types")
+
+        harm_counts = gemini_df['consumer_harm'].value_counts()
+        fig_harm = go.Figure(go.Pie(
+            labels=harm_counts.index,
+            values=harm_counts.values,
+            hole=0.5,
+            marker=dict(colors=[DANGER, WARNING, SUCCESS, PRIMARY, PURPLE][:len(harm_counts)]),
+            textinfo="percent+label",
+            textfont=dict(size=11, color=TEXT1),
+            hovertemplate="<b>%{label}</b><br>%{value} · %{percent}<extra></extra>",
+        ))
+        fig_harm.update_layout(**PL(height=300))
+        st.plotly_chart(fig_harm, use_container_width=True)
+
+        # ── Complaint browser ──
+        st.markdown("---")
+        section_label("Browse Analyzed Complaints")
+
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            filter_cause = st.selectbox(
+                "Filter by root cause:",
+                ["All"] + sorted(gemini_df['root_cause'].unique().tolist())
+            )
+        with col_f2:
+            if 'predicted_risk' in gemini_df.columns:
+                filter_risk = st.selectbox(
+                    "Filter by risk level:",
+                    ["All", "high", "medium", "low"]
+                )
+            else:
+                filter_risk = "All"
+
+        filtered_df = gemini_df.copy()
+        if filter_cause != "All":
+            filtered_df = filtered_df[filtered_df['root_cause'] == filter_cause]
+        if filter_risk != "All" and 'predicted_risk' in gemini_df.columns:
+            filtered_df = filtered_df[filtered_df['predicted_risk'] == filter_risk]
+
+        st.caption(f"**{len(filtered_df)}** complaints")
+
+        # Determine display columns based on available data
+        available_cols = [c for c in ["narrative", "product", "predicted_risk", "root_cause", "consumer_harm", "severity", "explanation"] if c in filtered_df.columns]
+        display_df = filtered_df[available_cols].head(20).reset_index(drop=True)
+
+        html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">'
+        html_table += f'<thead><tr style="background:rgba(0,212,255,0.1);border-bottom:1px solid {BORDER};">'
+        for col in display_df.columns:
+            html_table += f'<th style="padding:8px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.replace("_", " ").title()}</th>'
+        html_table += '</tr></thead>'
+
+        html_table += '<tbody>'
+        for idx, row in display_df.iterrows():
+            bg = "rgba(0,212,255,0.05)" if idx % 2 == 0 else "transparent"
+            html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
+            for col in display_df.columns:
+                text = str(row[col])
+                if col == "narrative" and len(text) > 100:
+                    text = text[:100] + "..."
+                if col == "severity":
+                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
+                    html_table += f'<td style="padding:8px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
+                elif col == "predicted_risk":
+                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
+                    html_table += f'<td style="padding:8px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
+                else:
+                    html_table += f'<td style="padding:8px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
+            html_table += '</tr>'
+        html_table += '</tbody></table>'
+
+        st.markdown(html_table, unsafe_allow_html=True)
+
+    else:
+        st.info("Run `python task3_risk_rating/task3_qwen_analysis.py` from the project root to generate LLM analysis for all test complaints.")
+
+
 elif "Topic" in page:
 
     st.title("Topic Discovery Explorer")
@@ -919,5 +1137,25 @@ elif "Topic" in page:
             fig_t.update_yaxes(tickfont=dict(size=11, color="#C8D8E8"))
             st.plotly_chart(fig_t, use_container_width=True)
 
-        st.dataframe(sub[["narrative", "product_label"]].rename(columns={"product_label": "product"}).head(15),
-                     use_container_width=True, hide_index=True)
+        # Custom HTML table with white text for high contrast
+        display_df = sub[["narrative", "product_label"]].rename(columns={"product_label": "product"}).head(15).reset_index(drop=True)
+
+        html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">'
+        html_table += f'<thead><tr style="background:rgba(167,139,250,0.1);border-bottom:1px solid {BORDER};">'
+        for col in display_df.columns:
+            html_table += f'<th style="padding:10px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.title()}</th>'
+        html_table += '</tr></thead>'
+
+        html_table += '<tbody>'
+        for idx, row in display_df.iterrows():
+            bg = "rgba(167,139,250,0.05)" if idx % 2 == 0 else "transparent"
+            html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
+            for col in display_df.columns:
+                text = str(row[col])
+                if col == "narrative" and len(text) > 120:
+                    text = text[:120] + "..."
+                html_table += f'<td style="padding:10px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
+            html_table += '</tr>'
+        html_table += '</tbody></table>'
+
+        st.markdown(html_table, unsafe_allow_html=True)
