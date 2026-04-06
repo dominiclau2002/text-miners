@@ -129,12 +129,101 @@ Related preprocessing notebooks:
 
 ## Demo dashboard
 
-The `demo/streamlit.py` app is a Streamlit dashboard for exploring the complaint analysis pipeline. It reads the exported CSV and JSON artifacts under `outputs/` and presents four views in the sidebar:
+The `demo/streamlit.py` app is a Streamlit dashboard for exploring the complaint analysis pipeline. It reads the exported CSV and JSON artifacts under `outputs/` and presents five tabs in the sidebar:
 
-- `Overview`: summary metrics and project status
-- `Classification`: product category model results
-- `Risk Queue`: high-risk complaint review
-- `Topic Explorer`: LDA topic browsing and charts
+- `Overview`: summary metrics and dataset distribution
+- `Classification`: product category model results and complaint search
+- `Risk Queue`: annotated and predicted risk prioritisation
+- `LLM Analysis`: Qwen-powered semantic analysis of complaints
+- `Topic Explorer`: LDA topic browsing, sunburst, and keyword charts
+
+### Tab descriptions
+
+#### Overview (`🏠 Overview`)
+
+The landing page. Displays four headline stat cards at the top:
+
+| Card | Value |
+|------|-------|
+| Complaints Processed | 143,962 (full dataset) |
+| Product Categories | 5 normalised classes |
+| Topics Discovered | 10 (LDA coherence k=10) |
+| Best Macro F1 | 0.8545 (Logistic Regression) |
+
+Below the metrics:
+
+- **Distribution by Product Category** — a horizontal bar chart and a donut pie chart side-by-side showing how the 115,169 training complaints are split across the five product classes (Credit Reporting, Debt Collection, Mortgages & Loans, Credit Card, Retail Banking).
+- **Topic Distribution Across Complaints** — a horizontal bar chart of dominant topic frequencies sampled from 5,000 complaints, using human-readable topic labels from `outputs/topic_labels.json` when available.
+
+The sidebar also shows a **Pipeline Status** panel with green/grey indicators for each pipeline stage (Data Split, Topic Modelling, Classification, Risk Rating).
+
+---
+
+#### Classification (`🏷️ Classification`)
+
+Shows the results from Task 2: multi-class NLP classification of complaints into five financial product categories.
+
+- **Model Comparison** — three stat cards comparing Naive Bayes (F1 0.8138), Logistic Regression (F1 0.8545 ★ Best), and Neural Network MLP (F1 0.8533), each with macro F1 and accuracy.
+- **Per-class F1 Score** — horizontal bar chart showing Logistic Regression's per-category F1 scores (Credit Reporting 0.90, Retail Banking 0.89, Mortgages & Loans 0.86, Credit Card 0.81, Debt Collection 0.81) with a 0.85 target line.
+- **All Models Side-by-side F1** — horizontal bar chart comparing the three models on a zoomed axis for easy comparison.
+- **Confusion Matrices** — displayed as a static image if `outputs/confusion_matrices.png` exists.
+
+When `outputs/classification_results.csv` is present, additional live views are unlocked:
+
+- **Actual vs Predicted Distribution** — two donut charts side-by-side comparing the true and predicted class distributions on the test set.
+- **Accuracy by Product Category** — horizontal bar chart of per-category accuracy.
+- **Search Complaints** — keyword search box that filters complaint narratives in real time and displays up to 20 matching rows (narrative, actual product, predicted product).
+
+---
+
+#### Risk Queue (`⚠️ Risk Queue`)
+
+Shows the results from Task 3: triaging complaints by predicted risk level so high-risk cases surface first for analyst review.
+
+Always visible (from `data/annotation_sample_labelled.csv`):
+
+- **Annotation Label Distribution** — three stat cards showing how many of the 692 hand-labelled complaints were rated high / medium / low risk.
+- **Risk Split Donut** — donut chart of the annotation sample with high risk pulled out.
+- **Risk × Product Heatmap** — stacked horizontal bar chart showing the share of each risk label within each product category for the annotated sample.
+
+If `outputs/risk_rating_confusion_matrix.png` exists:
+
+- **Confusion Matrix** — the risk-rating model's confusion matrix image.
+
+When `outputs/risk_results.csv` is present:
+
+- **Predicted Risk Counts** — three stat cards (high / medium / low) for the full test set.
+- **Risk % by Product Heatmap** — colour-coded grid (green → yellow → red) showing predicted risk share per product category.
+- **High-Risk Complaint Browser** — filterable table (by product) showing up to 50 high-risk complaints with their narrative, product, and risk label colour-coded in red.
+
+---
+
+#### LLM Analysis (`🤖 LLM Analysis`)
+
+Uses Qwen (via `task3_risk_rating/task3_qwen_analysis.py`) to semantically analyse test complaints, surfacing root causes, consumer harm types, and severity judgements.
+
+Requires `outputs/task3_gemini/gemini_complaint_analysis.csv` to be generated first.
+
+- **Analysis Overview** — four stat cards: total complaints analysed, unique root causes identified, high-risk count, high-severity count.
+- **Root Cause Analysis** — horizontal bar chart ranking the most common root causes across all analysed complaints.
+- **Severity Breakdown** — inline summary showing high / medium / low severity counts and percentages.
+- **Risk Level Distribution** — bar chart of predicted risk levels (high / medium / low) colour-coded red / amber / green.
+- **Consumer Harm Types** — donut chart showing the distribution of harm categories identified by the LLM.
+- **Browse Analyzed Complaints** — filterable table (by root cause and risk level) showing up to 20 complaints with narrative, product, predicted risk, root cause, consumer harm, severity, and LLM explanation.
+
+---
+
+#### Topic Explorer (`🔍 Topic Explorer`)
+
+Visualises the 10 latent topics discovered by LDA in Task 1.
+
+Requires `outputs/complaints_with_topics.csv` and `outputs/topic_vectors.csv`.
+
+- **Topic Distribution by Product — Interactive Sunburst** — two-level sunburst chart (outer ring = topic, inner ring = product category) that lets you drill into which topics appear in which product lines.
+- **Complaint Volume by Topic** — horizontal bar chart showing how many of the 10,000 sampled complaints belong to each topic, with gradient colouring.
+- **Topic × Product Category Heatmap** — static heatmap image (`outputs/topic_category_heatmap.png`) if available.
+- **Top Keywords per Topic** — static bar/chart image (`outputs/topic_keywords_labeled.png` or `outputs/topic_keywords.png`) showing the highest-weight words for each of the 10 topics.
+- **Browse Complaints by Topic** — dropdown to select a topic, followed by a product breakdown bar chart and a table of up to 15 sample complaint narratives assigned to that topic.
 
 ### What the demo requires
 
