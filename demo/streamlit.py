@@ -400,15 +400,15 @@ with st.sidebar:
     <div style="margin-top:1.6rem;margin-bottom:0.55rem;">
         <span style="font-size:0.58rem;font-weight:700;color:rgba(0,212,255,0.35);
             text-transform:uppercase;letter-spacing:0.18em;font-family:'DM Mono',monospace;">
-            Pipeline Status
+            Outputs Ready
         </span>
     </div>""", unsafe_allow_html=True)
 
     pipeline = {
-        "Data Split":      os.path.exists(os.path.join(DATA, "train_data.csv")),
-        "Topic Modelling": os.path.exists(os.path.join(OUTPUTS, "topic_vectors.csv")),
-        "Classification":  os.path.exists(os.path.join(OUTPUTS, "classification_results.csv")),
-        "Risk Rating":     os.path.exists(os.path.join(OUTPUTS, "risk_results.csv")),
+        "Train / Test Split":    os.path.exists(os.path.join(DATA, "train_data.csv")),
+        "LDA Topic Modelling":   os.path.exists(os.path.join(OUTPUTS, "topic_vectors.csv")),
+        "Product Classification": os.path.exists(os.path.join(OUTPUTS, "classification_results.csv")),
+        "Risk Rating":           os.path.exists(os.path.join(OUTPUTS, "risk_results.csv")),
     }
     for task, done in pipeline.items():
         a = SUCCESS if done else TEXT2
@@ -450,7 +450,7 @@ if "Overview" in page:
     with c3:
         st.markdown(stat_card("Topics Discovered",    "10",      "LDA coherence k=10",  PURPLE,    0.16), unsafe_allow_html=True)
     with c4:
-        f1 = "—" if class_res is None else "0.8545"
+        f1 = "—" if class_res is None else "0.8556"
         st.markdown(stat_card("Best Macro F1",        f1,        "logistic regression", SUCCESS,   0.24), unsafe_allow_html=True)
 
     st.markdown("---")
@@ -544,9 +544,9 @@ elif "Classification" in page:
     # ── Model comparison cards (hardcoded from notebook) ──
     section_label("Model Comparison — Macro F1")
     MODEL_RESULTS = [
-        ("Naive Bayes",         0.8138, 0.83, PRIMARY),
-        ("Logistic Regression", 0.8545, 0.87, SUCCESS),
-        ("Neural Network MLP",  0.8533, 0.87, PURPLE),
+        ("Naive Bayes",         0.8139, 0.83, PRIMARY),
+        ("Logistic Regression", 0.8556, 0.87, SUCCESS),
+        ("Neural Network MLP",  0.8532, 0.87, PURPLE),
     ]
     c1, c2, c3 = st.columns(3)
     for col, (model, f1, acc, color) in zip([c1, c2, c3], MODEL_RESULTS):
@@ -704,7 +704,7 @@ elif "Risk Queue" in page:
 
     st.title("Risk Priority Queue")
     st.markdown(
-        f'<p style="font-size:1rem;color:{TEXT2};margin:0.2rem 0 2.5rem;">Complaints triage by predicted risk level — high-risk cases surfaced first for analyst review.</p>',
+        f'<p style="font-size:1rem;color:{TEXT2};margin:0.2rem 0 2.5rem;">Task 3 · Logistic Regression risk classifier · trained on 692 keyword-labelled complaints · applied to 28,793 held-out test complaints</p>',
         unsafe_allow_html=True,
     )
 
@@ -713,7 +713,7 @@ elif "Risk Queue" in page:
 
     # ── Annotation label distribution (always visible) ──
     if annotation is not None and "risk_label" in annotation.columns:
-        section_label("Annotation Sample — Label Distribution (n=692)")
+        section_label("Step 1 · Training Labels — Keyword Annotation Sample (n=692)")
 
         rc = annotation["risk_label"].str.lower().value_counts().reset_index()
         rc.columns = ["risk", "count"]
@@ -730,7 +730,7 @@ elif "Risk Queue" in page:
 
         col_donut, col_bar = st.columns([1, 1.4])
         with col_donut:
-            section_label("Risk Split — Donut")
+            section_label("Label Distribution (annotation sample)")
             colors_r = [RISK_COLORS.get(r, PRIMARY) for r in rc["risk"]]
             fig_d = go.Figure(go.Pie(
                 labels=rc["risk"].str.title(), values=rc["count"],
@@ -752,7 +752,7 @@ elif "Risk Queue" in page:
 
         with col_bar:
             if "product" in annotation.columns:
-                section_label("Risk × Product Heatmap")
+                section_label("Risk Label × Product Category (annotation sample)")
                 cross = annotation.groupby(["product", "risk_label"]).size().reset_index(name="n")
                 tots  = cross.groupby("product")["n"].sum()
                 cross["pct"] = cross.apply(lambda r: r["n"] / tots[r["product"]] * 100, axis=1)
@@ -778,7 +778,7 @@ elif "Risk Queue" in page:
     # ── Risk model confusion matrix ──
     cm_risk = os.path.join(OUTPUTS, "risk_rating_confusion_matrix.png")
     if os.path.exists(cm_risk):
-        section_label("Risk Rating Model — Confusion Matrix")
+        section_label("Step 2 · Model Evaluation — LR Classifier on 20% Annotation Test Split")
         col_img, _ = st.columns([1, 1])
         with col_img:
             st.image(cm_risk, use_container_width=True)
@@ -786,7 +786,11 @@ elif "Risk Queue" in page:
     # ── Full predicted results (when CSV exists) ──
     if risk_res is not None and "predicted_risk" in risk_res.columns:
         st.markdown("---")
-        section_label("Predicted Risk — Full Test Set")
+        section_label("Step 3 · Inference — LR Risk Predictions on Full Test Set (28,793 complaints)")
+        st.markdown(
+            f'<p style="font-size:0.82rem;color:{TEXT2};margin:-0.8rem 0 1.2rem;">Same LR classifier applied to the 20% stratified test split (143,962 total complaints × 0.2) · labels: high / medium / low</p>',
+            unsafe_allow_html=True,
+        )
 
         rc2 = risk_res["predicted_risk"].str.lower().value_counts()
         d1, d2, d3 = st.columns(3)
@@ -800,7 +804,7 @@ elif "Risk Queue" in page:
                              unsafe_allow_html=True)
 
         if "product" in risk_res.columns:
-            section_label("Risk % by Product — Heatmap")
+            section_label("LR Predicted Risk Distribution by Product Category (test set)")
             heat = risk_res.groupby(["product", "predicted_risk"]).size().unstack(fill_value=0)
             heat_pct = heat.div(heat.sum(axis=1), axis=0)
             heat_pct.index = heat_pct.index.str.replace("_", " ").str.title()
@@ -814,44 +818,47 @@ elif "Risk Queue" in page:
             fig_h.update_traces(textfont_color=TEXT1, textfont_size=12)
             st.plotly_chart(fig_h, use_container_width=True)
 
-        section_label("High-Risk Complaint Browser")
-        high_df = risk_res[risk_res["predicted_risk"] == "high"].copy()
-        cf, cs = st.columns([2, 1])
-        with cf:
-            opts = ["All"] + sorted(risk_res["product"].dropna().unique().tolist()) if "product" in risk_res.columns else ["All"]
-            fp = st.selectbox("Filter by product", opts)
-        with cs:
-            st.markdown(f'<div style="padding-top:30px;font-size:0.8rem;color:{DANGER};font-family:\'JetBrains Mono\',monospace;">{len(high_df):,} high-risk</div>', unsafe_allow_html=True)
-        if fp != "All":
-            high_df = high_df[high_df["product"] == fp]
+        # ── Risk-level examples ──
+        if "prob_high" in risk_res.columns:
+            st.markdown("---")
+            section_label("Complaint Examples by Risk Level — Top 5 per Tier by Model Confidence")
+            st.markdown(
+                f'<p style="font-size:0.82rem;color:{TEXT2};margin:-0.8rem 0 1.2rem;">Sorted by the LR classifier\'s probability score for each risk tier</p>',
+                unsafe_allow_html=True,
+            )
 
-        # Custom HTML table with white text for high contrast
-        display_df = high_df[["narrative", "product", "predicted_risk"]].head(50).reset_index(drop=True)
+            TIERS = [
+                ("high",   "HIGH RISK",   "prob_high",   DANGER,  "rgba(255,71,87,0.3)",  "rgba(255,71,87,0.05)"),
+                ("medium", "MEDIUM RISK", "prob_medium", WARNING, "rgba(255,184,0,0.3)",  "rgba(255,184,0,0.05)"),
+                ("low",    "LOW RISK",    "prob_low",    SUCCESS, "rgba(0,229,160,0.3)",  "rgba(0,229,160,0.05)"),
+            ]
 
-        html_table = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">'
-        html_table += f'<thead><tr style="background:rgba(255,71,87,0.1);border-bottom:1px solid {BORDER};">'
-        for col in display_df.columns:
-            html_table += f'<th style="padding:10px;text-align:left;color:{TEXT1};font-weight:600;border-right:1px solid {BORDER};">{col.replace("_", " ").title()}</th>'
-        html_table += '</tr></thead>'
+            for risk_level, label, prob_col, color, border_color, bg_color in TIERS:
+                st.markdown(f'<div style="margin-top:1.4rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:{color};font-family:\'DM Mono\',monospace;letter-spacing:0.1em;">{label}</div>', unsafe_allow_html=True)
+                examples = (
+                    risk_res[risk_res["predicted_risk"] == risk_level]
+                    .sort_values(prob_col, ascending=False)
+                    .head(5)
+                    .reset_index(drop=True)
+                )
+                for _, row in examples.iterrows():
+                    prob = row[prob_col]
+                    product = row["product"].replace("_", " ").title()
+                    narrative = row["narrative"]
+                    if len(narrative) > 300:
+                        narrative = narrative[:300] + "…"
+                    st.markdown(
+                        f'<div style="margin-bottom:8px;padding:12px 16px;border-radius:8px;'
+                        f'border:1px solid {border_color};background:{bg_color};">'
+                        f'<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'
+                        f'<span style="color:{color};font-weight:700;font-family:\'DM Mono\',monospace;font-size:0.75rem;">{label}</span>'
+                        f'<span style="color:{TEXT2};font-size:0.78rem;">{product} &nbsp;·&nbsp; confidence: <span style="color:{color};font-weight:600;">{prob:.1%}</span></span>'
+                        f'</div>'
+                        f'<p style="color:{TEXT1};font-size:0.83rem;margin:0;line-height:1.55;">{narrative}</p>'
+                        f'</div>',
+                        unsafe_allow_html=True,
+                    )
 
-        html_table += '<tbody>'
-        for idx, row in display_df.iterrows():
-            bg = "rgba(255,71,87,0.05)" if idx % 2 == 0 else "transparent"
-            html_table += f'<tr style="background:{bg};border-bottom:1px solid {BORDER};">'
-            for col in display_df.columns:
-                text = str(row[col])
-                if col == "narrative" and len(text) > 120:
-                    text = text[:120] + "..."
-                # Color-code risk level
-                if col == "predicted_risk":
-                    color = DANGER if text == "high" else (WARNING if text == "medium" else SUCCESS)
-                    html_table += f'<td style="padding:10px;color:{color};font-weight:600;border-right:1px solid {BORDER};">{text.upper()}</td>'
-                else:
-                    html_table += f'<td style="padding:10px;color:{TEXT1};border-right:1px solid {BORDER};">{text}</td>'
-            html_table += '</tr>'
-        html_table += '</tbody></table>'
-
-        st.markdown(html_table, unsafe_allow_html=True)
     else:
         st.info("Export `outputs/risk_results.csv` from `task3_risk_rating/risk_rating.ipynb` to see full predicted risk results here.")
 
@@ -870,30 +877,30 @@ elif "LLM Analysis" in page:
         unsafe_allow_html=True,
     )
 
-    # Load Gemini analysis
-    gemini_folder = os.path.join(OUTPUTS, "task3_gemini")
-    gemini_csv_path = os.path.join(gemini_folder, "gemini_complaint_analysis.csv")
-    gemini_summary_path = os.path.join(gemini_folder, "analysis_summary.json")
+    # Load Qwen analysis
+    qwen_folder = os.path.join(OUTPUTS, "task3_gemini")
+    qwen_csv_path = os.path.join(qwen_folder, "gemini_complaint_analysis.csv")
+    qwen_summary_path = os.path.join(qwen_folder, "analysis_summary.json")
 
-    if os.path.exists(gemini_csv_path):
-        gemini_df = pd.read_csv(gemini_csv_path)
-        with open(gemini_summary_path) as f:
-            gemini_summary = json.load(f)
+    if os.path.exists(qwen_csv_path):
+        qwen_df = pd.read_csv(qwen_csv_path)
+        with open(qwen_summary_path) as f:
+            qwen_summary = json.load(f)
 
         # ── Summary metrics ──
         section_label("Analysis Overview")
         c1, c2, c3, c4 = st.columns(4)
 
         with c1:
-            st.metric("Complaints Analyzed", len(gemini_df))
+            st.metric("Complaints Analyzed", len(qwen_df))
         with c2:
-            root_causes = len(set(gemini_df['root_cause']))
+            root_causes = len(set(qwen_df['root_cause']))
             st.metric("Unique Root Causes", root_causes)
         with c3:
-            high_risk = (gemini_df.get('predicted_risk', pd.Series()) == 'high').sum() if 'predicted_risk' in gemini_df.columns else 0
+            high_risk = (qwen_df.get('predicted_risk', pd.Series()) == 'high').sum() if 'predicted_risk' in qwen_df.columns else 0
             st.metric("High Risk", high_risk)
         with c4:
-            high_severity = (gemini_df['severity'] == 'high').sum()
+            high_severity = (qwen_df['severity'] == 'high').sum()
             st.metric("High Severity", high_severity)
 
         st.markdown("---")
@@ -903,7 +910,7 @@ elif "LLM Analysis" in page:
         col_causes, col_stats = st.columns([1.5, 1])
 
         with col_causes:
-            cause_counts = gemini_df['root_cause'].value_counts()
+            cause_counts = qwen_df['root_cause'].value_counts()
             fig_causes = go.Figure(go.Bar(
                 y=cause_counts.index,
                 x=cause_counts.values,
@@ -915,7 +922,7 @@ elif "LLM Analysis" in page:
                 textfont=dict(family="DM Mono", size=11, color=TEXT1),
                 hovertemplate="<b>%{y}</b><br>%{x} complaints<extra></extra>",
             ))
-            fig_causes.update_layout(**PL(f"n={len(gemini_df)}", height=320))
+            fig_causes.update_layout(**PL(f"n={len(qwen_df)}", height=320))
             fig_causes.update_yaxes(autorange="reversed", tickfont=dict(size=11, color="#C8D8E8"))
             st.plotly_chart(fig_causes, use_container_width=True)
 
@@ -923,8 +930,8 @@ elif "LLM Analysis" in page:
             st.markdown("---")
             st.markdown(f'<div style="padding:1rem;"><span style="font-size:0.85rem;color:{TEXT2};">Severity Breakdown</span></div>', unsafe_allow_html=True)
             for severity in ['high', 'medium', 'low']:
-                count = (gemini_df['severity'] == severity).sum()
-                pct = 100 * count / len(gemini_df) if len(gemini_df) > 0 else 0
+                count = (qwen_df['severity'] == severity).sum()
+                pct = 100 * count / len(qwen_df) if len(qwen_df) > 0 else 0
                 color_map = {'high': DANGER, 'medium': WARNING, 'low': SUCCESS}
                 st.markdown(
                     f'<div style="margin-bottom:12px;padding:10px;background:rgba(0,212,255,0.05);border-radius:6px;">'
@@ -935,10 +942,10 @@ elif "LLM Analysis" in page:
                 )
 
         # ── Risk level filter ──
-        if 'predicted_risk' in gemini_df.columns:
+        if 'predicted_risk' in qwen_df.columns:
             st.markdown("---")
             section_label("Risk Level Distribution")
-            risk_counts = gemini_df['predicted_risk'].value_counts()
+            risk_counts = qwen_df['predicted_risk'].value_counts()
             fig_risk = go.Figure(go.Bar(
                 x=risk_counts.index,
                 y=risk_counts.values,
@@ -955,7 +962,7 @@ elif "LLM Analysis" in page:
         st.markdown("---")
         section_label("Consumer Harm Types")
 
-        harm_counts = gemini_df['consumer_harm'].value_counts()
+        harm_counts = qwen_df['consumer_harm'].value_counts()
         fig_harm = go.Figure(go.Pie(
             labels=harm_counts.index,
             values=harm_counts.values,
@@ -976,10 +983,10 @@ elif "LLM Analysis" in page:
         with col_f1:
             filter_cause = st.selectbox(
                 "Filter by root cause:",
-                ["All"] + sorted(gemini_df['root_cause'].unique().tolist())
+                ["All"] + sorted(qwen_df['root_cause'].unique().tolist())
             )
         with col_f2:
-            if 'predicted_risk' in gemini_df.columns:
+            if 'predicted_risk' in qwen_df.columns:
                 filter_risk = st.selectbox(
                     "Filter by risk level:",
                     ["All", "high", "medium", "low"]
@@ -987,10 +994,10 @@ elif "LLM Analysis" in page:
             else:
                 filter_risk = "All"
 
-        filtered_df = gemini_df.copy()
+        filtered_df = qwen_df.copy()
         if filter_cause != "All":
             filtered_df = filtered_df[filtered_df['root_cause'] == filter_cause]
-        if filter_risk != "All" and 'predicted_risk' in gemini_df.columns:
+        if filter_risk != "All" and 'predicted_risk' in qwen_df.columns:
             filtered_df = filtered_df[filtered_df['predicted_risk'] == filter_risk]
 
         st.caption(f"**{len(filtered_df)}** complaints")
