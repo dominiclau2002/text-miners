@@ -129,7 +129,7 @@ Related preprocessing notebooks:
 
 ## Demo dashboard
 
-The `demo/streamlit.py` app is a Streamlit dashboard for exploring the complaint analysis pipeline. It reads the exported CSV and JSON artifacts under `outputs/` and presents four views in the sidebar:
+The `demo/streamlit.py` app is a Streamlit dashboard for exploring the complaint analysis pipeline. It reads the exported CSV and JSON artifacts under `outputs/` and presents five tabs in the sidebar:
 
 - `Overview`: summary metrics and dataset distribution
 - `Classification`: product category model results and complaint search
@@ -155,7 +155,7 @@ Below the metrics:
 - **Distribution by Product Category** — a horizontal bar chart and a donut pie chart side-by-side showing how the 115,169 training complaints are split across the five product classes (Credit Reporting, Debt Collection, Mortgages & Loans, Credit Card, Retail Banking).
 - **Topic Distribution Across Complaints** — a horizontal bar chart of dominant topic frequencies sampled from 5,000 complaints, using human-readable topic labels from `outputs/topic_labels.json` when available.
 
-The sidebar also shows an **Outputs Ready** panel with green/grey indicators for each pipeline stage (Train / Test Split, LDA Topic Modelling, Product Classification, Risk Rating).
+The sidebar also shows a **Pipeline Status** panel with green/grey indicators for each pipeline stage (Data Split, Topic Modelling, Classification, Risk Rating).
 
 ---
 
@@ -178,28 +178,23 @@ When `outputs/classification_results.csv` is present, additional live views are 
 
 #### Risk Queue (`⚠️ Risk Queue`)
 
-Shows the full Task 3 pipeline in three explicit steps: training label construction, model evaluation, and inference on the full test set. The classifier is a TF-IDF + Logistic Regression model trained on 692 keyword-auto-labelled complaints and applied to the 28,793-complaint held-out test set (20% of the full 143,962 CFPB dataset).
+Shows the results from Task 3: triaging complaints by predicted risk level so high-risk cases surface first for analyst review.
 
-**Step 1 — Training Labels: Keyword Auto-Labelled Annotation Sample (n=692)**
+Always visible (from `data/annotation_sample_labelled.csv`):
 
-Source: `data/annotation_sample_labelled.csv` — a stratified 0.6% sample drawn from the 80% training split and auto-labelled using a keyword rule set (see `task3_risk_rating/annotation_guide.md`).
+- **Annotation Label Distribution** — three stat cards showing how many of the 692 hand-labelled complaints were rated high / medium / low risk.
+- **Risk Split Donut** — donut chart of the annotation sample with high risk pulled out.
+- **Risk × Product Heatmap** — stacked horizontal bar chart showing the share of each risk label within each product category for the annotated sample.
 
-- Three stat cards showing the high / medium / low label counts and percentages across the 692 complaints.
-- **Label Distribution donut** — proportion of each risk label in the annotation sample, with the high-risk slice pulled out for emphasis.
-- **Risk Label × Product Category stacked bar** — share of each risk label within each of the five product categories, showing how risk concentration varies by complaint type.
+If `outputs/risk_rating_confusion_matrix.png` exists:
 
-**Step 2 — Model Evaluation: LR Classifier on 20% Annotation Test Split**
+- **Confusion Matrix** — the risk-rating model's confusion matrix image.
 
-Source: `outputs/risk_rating_confusion_matrix.png` — generated when `risk_rating.ipynb` evaluates the LR model on the 20% of the annotation sample that was not used for training (~138 complaints).
+When `outputs/risk_results.csv` is present:
 
-- **Normalised confusion matrix** — per-class recall for high / medium / low, showing where the model confuses risk levels.
-
-**Step 3 — Inference: LR Risk Predictions on Full Test Set (28,793 complaints)**
-
-Source: `outputs/risk_results.csv` — the trained LR classifier applied to all 28,793 test-split complaints (columns: `narrative`, `product`, `predicted_risk`, `prob_high`, `prob_low`, `prob_medium`).
-
-- Three stat cards showing predicted high / medium / low counts and their share of the test set.
-- **LR Predicted Risk Distribution by Product Category heatmap** — colour-coded grid (green → amber → red) showing what fraction of each product category's test complaints were predicted as each risk level.
+- **Predicted Risk Counts** — three stat cards (high / medium / low) for the full test set.
+- **Risk % by Product Heatmap** — colour-coded grid (green → yellow → red) showing predicted risk share per product category.
+- **High-Risk Complaint Browser** — filterable table (by product) showing up to 50 high-risk complaints with their narrative, product, and risk label colour-coded in red.
 
 ---
 
