@@ -1,6 +1,6 @@
 # Text Miners
 
-This repository contains notebooks and datasets for complaint text preprocessing and downstream NLP tasks.
+This repository supports an NLP pipeline built on CFPB (Consumer Financial Protection Bureau) consumer complaint data. The pipeline covers four stages: text preprocessing and EDA, LDA topic modelling to discover latent complaint themes, multi-class product category classification (Naive Bayes, Logistic Regression, MLP), and risk rating to triage complaints by severity (rule-based, LR, DistilBERT). A Qwen-powered enrichment layer adds root cause, harm type, and severity explanations on top of the risk classifier. Results are surfaced through a Streamlit dashboard.
 
 ## Repository structure
 
@@ -17,31 +17,46 @@ text-miners/
 │   ├── test_data.csv
 │   ├── train_indices.csv
 │   ├── test_indices.csv
-│   ├── annotation_sample.csv
 │   ├── annotation_sample_labelled.csv
 │   ├── split_info.txt
 │   └── data_info.py
 ├── preprocessing/
 │   ├── data_preprocessing.ipynb
-│   ├── data_preprocessing.py
 │   └── data_splitting.ipynb
 ├── task1_topic_modelling/
-│   ├── topic_modelling.ipynb
-│   └── topic_modelling.py
+│   └── topic_modelling.ipynb
 ├── task2_classification/
-│   ├── classification.ipynb
-│   └── classification.py
+│   └── classification.ipynb
 ├── task3_risk_rating/
 │   ├── annotation_guide.md
 │   ├── risk_rating.ipynb
-│   ├── risk_rating.py
 │   ├── risk_rating2.ipynb
-│   ├── risk_rating2.py
-│   ├── task3_qwen_analysis.py
-│   ├── task3_risk_clustering.py
-│   └── task3_risk_clustering_bertopic.py
-├── correct_annotations.py
+│   └── task3_qwen_analysis.py
 ├── outputs/
+│   ├── classification_results.csv
+│   ├── complaints_with_topics.csv
+│   ├── confusion_matrices.png
+│   ├── risk_rating_confusion_matrix.png
+│   ├── risk_results.csv
+│   ├── task3_bert_confusion_matrix.png
+│   ├── task3_lr_confusion_matrix.png
+│   ├── task3_model_comparison.png
+│   ├── task3_rule_confusion_matrix.png
+│   ├── topic_category_heatmap.png
+│   ├── topic_keywords_labeled.png
+│   ├── topic_keywords.png
+│   ├── topic_labels.json
+│   ├── topic_vectors.csv
+│   ├── task3_clustering/
+│   │   ├── cluster_definitions.json
+│   │   ├── cluster_distribution.png
+│   │   ├── cluster_summary.csv
+│   │   ├── high_risk_clustered.csv
+│   │   └── product_cluster_heatmap.png
+│   └── task3_gemini/
+│       ├── analysis_summary.json
+│       ├── gemini_complaint_analysis.csv
+│       └── high_risk_gemini_analysis.csv
 └── demo/
     └── streamlit.py
 ```
