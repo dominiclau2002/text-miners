@@ -1,4 +1,4 @@
-# Text Miners
+# ComplaintSmart
 
 This repository supports an NLP pipeline built on CFPB (Consumer Financial Protection Bureau) consumer complaint data. The pipeline covers four stages: text preprocessing and EDA, LDA topic modelling to discover latent complaint themes, multi-class product category classification (Naive Bayes, Logistic Regression, MLP), and risk rating to triage complaints by severity (rule-based, LR, DistilBERT). A Qwen-powered enrichment layer adds root cause, harm type, and severity explanations on top of the risk classifier. Results are surfaced through a Streamlit dashboard.
 
