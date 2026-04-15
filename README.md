@@ -11,46 +11,50 @@ text-miners/
 ├── .gitignore
 ├── data/
 │   ├── complaints.csv
-│   ├── complaints_processed.csv
 │   ├── complaints_processed_full.csv
 │   ├── complaints_processed_full.csv.zip
-│   ├── credit_card_text.txt
-│   ├── credit_card_text_processed.csv
-│   ├── credit_reporting_text.txt
-│   ├── credit_reporting_text_processed.csv
-│   ├── credit_reporting_text_processed.csv.zip
-│   ├── debt_collection_text.txt
-│   ├── debt_collection_text_processed.csv
-│   ├── mortgages_and_loans_text.txt
-│   ├── mortgages_and_loans_text_processed.csv
-│   ├── retail_banking_text.txt
-│   ├── retail_banking_text_processed.csv
+│   ├── train_data.csv
+│   ├── test_data.csv
+│   ├── train_indices.csv
+│   ├── test_indices.csv
+│   ├── annotation_sample.csv
+│   ├── annotation_sample_labelled.csv
+│   ├── split_info.txt
 │   └── data_info.py
 ├── preprocessing/
-│   ├── 1_EDA-1.ipynb
-│   ├── 2_EDA-2.ipynb
-│   └── 3_prepping_data.ipynb
+│   ├── data_preprocessing.ipynb
+│   ├── data_preprocessing.py
+│   └── data_splitting.ipynb
 ├── task1_topic_modelling/
+│   ├── topic_modelling.ipynb
+│   └── topic_modelling.py
 ├── task2_classification/
+│   ├── classification.ipynb
+│   └── classification.py
 ├── task3_risk_rating/
 │   ├── annotation_guide.md
-│   └── risk_rating.ipynb
+│   ├── risk_rating.ipynb
+│   ├── risk_rating.py
+│   ├── risk_rating2.ipynb
+│   ├── risk_rating2.py
+│   ├── task3_qwen_analysis.py
+│   ├── task3_risk_clustering.py
+│   └── task3_risk_clustering_bertopic.py
+├── correct_annotations.py
 ├── outputs/
 └── demo/
+    └── streamlit.py
 ```
-
-Notes:
-
-- `task1_topic_modelling/`, `task2_classification/`, `outputs/`, and `demo/` are present but currently empty.
-- `task3_risk_rating/annotation_guide.md` is currently empty.
-- `task3_risk_rating/risk_rating.ipynb` is a minimal valid notebook scaffold.
 
 ## Data files and purpose
 
-- `data/complaints.csv`: original complaint dataset used as the primary source.
-- `data/complaints_processed_full.csv`: cleaned full dataset produced from `complaints.csv` in preprocessing.
-- `data/*_text.txt` and `data/*_text_processed.csv`: category level intermediate and processed artifacts.
-- `data/complaints_processed.csv`: legacy processed dataset artifact.
+- `data/complaints_processed_full.csv` (also available as `.zip`): cleaned full dataset — the **minimum required starting point** for running the pipeline. Produced from `complaints.csv` via `data_preprocessing.ipynb`; unzip and use directly without re-running preprocessing.
+- `data/complaints.csv`: original raw dataset. Only needed if you want to regenerate `complaints_processed_full.csv` from scratch; not required otherwise.
+- `data/train_data.csv` / `data/test_data.csv`: stratified 80/20 split of the full dataset (115,169 train / 28,793 test).
+- `data/train_indices.csv` / `data/test_indices.csv`: row indices for reproducible split reconstruction.
+- `data/annotation_sample.csv`: stratified random sample (~0.6% of train set, ~692 complaints) drawn for manual risk labelling.
+- `data/annotation_sample_labelled.csv`: the annotation sample with `risk_label` (high / medium / low) filled in via keyword-based rules; used by all Task 3 models.
+- `data/split_info.txt`: metadata about the train/test split (class distribution, split parameters).
 
 ## Dependency and environment requirements
 
@@ -89,7 +93,7 @@ nltk.download("wordnet")
 
 ## How `complaints_processed_full.csv` is created from `complaints.csv`
 
-The transformation is implemented in `preprocessing/3_prepping_data.ipynb`.
+The transformation is implemented in `preprocessing/data_preprocessing.ipynb`.
 
 1. Load source data:
    - `pd.read_csv('../data/complaints.csv')`
@@ -115,17 +119,17 @@ The transformation is implemented in `preprocessing/3_prepping_data.ipynb`.
 6. Export:
    - `df.to_csv('../data/complaints_processed_full.csv', index=False)`
 
-Related preprocessing notebooks:
-
-- `preprocessing/1_EDA-1.ipynb`: reads `complaints.csv` and writes category specific processed CSV files.
-- `preprocessing/2_EDA-2.ipynb`: performs additional EDA on category processed files.
+The train/test split is performed separately in `preprocessing/data_splitting.ipynb`, which produces `train_data.csv`, `test_data.csv`, and the corresponding index files.
 
 ## Quick start
 
 1. Create and activate a Python 3.12 virtual environment.
 2. Install dependencies listed above.
-3. Open notebooks from `preprocessing/` in Jupyter.
-4. Run `3_prepping_data.ipynb` to regenerate `data/complaints_processed_full.csv`.
+3. Unzip `data/complaints_processed_full.csv.zip` — this is the only data file you need to start.
+4. Run `preprocessing/data_splitting.ipynb` to generate `train_data.csv`, `test_data.csv`, and the index files.
+5. Run the task notebooks in order: `task1_topic_modelling/`, `task2_classification/`, `task3_risk_rating/`.
+
+> **Note:** `data/complaints.csv` and `preprocessing/data_preprocessing.ipynb` are only needed if you want to regenerate `complaints_processed_full.csv` from the original raw data. Skip them otherwise.
 
 ## Demo dashboard
 
@@ -200,9 +204,15 @@ When `outputs/risk_results.csv` is present:
 
 #### LLM Analysis (`🤖 LLM Analysis`)
 
-Uses Qwen (via `task3_risk_rating/task3_qwen_analysis.py`) to semantically analyse test complaints, surfacing root causes, consumer harm types, and severity judgements.
+Uses Qwen (via `task3_risk_rating/task3_qwen_analysis.py`) to semantically enrich complaints already classified by Logistic Regression, surfacing root causes, consumer harm types, and severity judgements.
 
-Requires `outputs/task3_gemini/gemini_complaint_analysis.csv` to be generated first.
+Requires `outputs/task3_gemini/gemini_complaint_analysis.csv` to be generated first by running:
+
+```bash
+python task3_risk_rating/task3_qwen_analysis.py
+```
+
+This script calls `qwen-plus` via the Alibaba DashScope API (set `DASHSCOPE_API_KEY` in a `.env` file). It loads LR's predicted risk from `outputs/task3_lr_predictions.pkl` and, for each complaint, returns four fields: `root_cause`, `consumer_harm`, `severity`, and `explanation`.
 
 - **Analysis Overview** — four stat cards: total complaints analysed, unique root causes identified, high-risk count, high-severity count.
 - **Root Cause Analysis** — horizontal bar chart ranking the most common root causes across all analysed complaints.
